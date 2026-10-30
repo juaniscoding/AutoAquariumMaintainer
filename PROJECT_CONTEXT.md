@@ -11,7 +11,9 @@ Purpose: hand this to a new Claude workspace so it can continue without re-askin
 - This is a DIY ESP32 aquarium controller. Planning is mostly done. No code
   has been written, nothing has been bought, nothing has been wired.
 - Section 3 lists DECIDED items. Do not re-open them unless the user does.
-- Section 11 lists OPEN items. Ask the user about these; do not assume.
+- Section 11 lists every question asked so far with the user's answer
+  beside it, plus the ones NOT ANSWERED YET. Ask about those; do not
+  assume.
 - Prices are snapshots from 29 Oct 2026. Re-check before telling the user
   to order.
 - Next deliverable once open items are settled: ESPHome firmware config +
@@ -442,27 +444,71 @@ Options that were discussed and not chosen:
   g) Adafruit IO: web dashboard rather than a phone app. Not preferred.
 
 ======================================================================
-11. OPEN DECISIONS (ask the user)
+11. QUESTIONS & ANSWERS (user's answers recorded beside each question)
 ======================================================================
+ANSWERED (30 Oct 2026)
+  Q: Which software/control route?
+  A: First picked Blynk. After learning HA could run on a spare laptop,
+     chose Home Assistant + ESPHome ("yes" to locking it in). See 3.6.
+
+  Q: Manual button: short press = flakes, long press = powder?
+  A: No. Make it a selectable option in the app that stays as set until
+     changed manually, because only one food type will be in use. See 3.7.
+
+  Q: Relay module: 3V (INR 159, recommended) or 5V (INR 72)?
+  A: 5V module, INR 72. See 3.3.
+
+  Q: Save this context doc in the repo and push to main?
+  A: Yes. Direct pushes to main, no PRs.
+
+  Q: Is there an always-on computer for Home Assistant?
+  A: Old Dell notebook: Celeron, 4 GB RAM, integrated graphics.
+
+  Q: How much free storage does the laptop have?
+  A: 32 GB eMMC.
+
+  Q: OK to wipe the laptop?
+  A: Yes.
+
+  Q: Does it have an Ethernet port / can it sit near the router?
+  A: No Ethernet port, but it can be kept near the router.
+
+  Q (asked by the user): Can HA's data go on a different drive (the
+     laptop's built-in microSD reader / a 32 GB drive)?
+  A (advice given): Possible, but not recommended (worse wear, extra
+     failure point, eMMC is enough). The user didn't object. HA data
+     stays on the eMMC.
+
+  Q: Remote access via Tailscale?
+  A: The user will decide later.
+
+NOT ANSWERED YET (ask the user; do not assume)
   1. Which filter to buy (sponge / internal / hang-on-back), its
      wattage/amps, and mains voltage (sets fuse rating, confirms relay).
+     A: -
   2. Filter on/off windows (times per day).
+     A: -
   3. Feed times and which food per slot; fasting days.
+     A: -
   4. Freshwater or saltwater? Tank size? (affects enclosure sealing and
      placement; salt creep corrodes electronics)
+     A: -
   5. RTC now or later (currently deferred).
+     A: -
   6. Which parts, if any, the user already owns.
-  7. Default "button food" before the user first sets it in the app.
-  8. Remote access: Tailscale (proposed) or other. The user will decide
-     later.
+     A: -
+  7. Default "button food" before the user first sets it in the app
+     (proposed: flakes).
+     A: -
+  8. Remote access: Tailscale (proposed) or other.
+     A: Later (see above).
   9. Laptop model (to check its Wi-Fi chip works with HA OS) and whether
      it supports UEFI boot.
- 10. Laptop Wi-Fi or a USB-to-Ethernet adapter.
+     A: -
+ 10. Laptop Wi-Fi or a USB-to-Ethernet adapter?
+     A: - (laptop can sit near the router, so either works)
  11. Is the user's 32 GB drive a USB pen drive or a microSD card?
-
-  RESOLVED 30 Oct 2026: software route (Home Assistant + ESPHome; Blynk
-  dropped), manual button behaviour (app-selected food, persistent),
-  relay module (5V, INR 72), HA data stays on the laptop's eMMC.
+     A: -
 
 ======================================================================
 12. FUTURE IDEAS (out of scope for v1)
@@ -499,7 +545,7 @@ The spare GPIOs and reserved I2C pins (21/22) leave room for these.
   Assistant + ESPHome), button behaviour and relay module decided; parts
   list ready; nothing purchased; no code; HA not installed yet.
 - Next steps:
-  1. Settle the remaining open decisions in section 11.
+  1. Settle the NOT ANSWERED YET items in section 11.
   2. User buys parts (re-check prices/stock; 180-degree MG90S only).
   3. Deliver the ESPHome config implementing section 9, with all logic on
      the ESP32, plus step-by-step HA OS install on the Dell laptop.
