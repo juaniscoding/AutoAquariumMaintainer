@@ -206,8 +206,8 @@ ADD LATER (optional, deferred to stay in budget)
     module fails the bench test (section 3.3).
 
 STILL NEEDED, NOT PRICED
-  - Mains side: 3-pin plug, 3-core cable, a socket for the filter, inline
-    fuse holder + fuse (sized from the filter's label), small junction box
+  - Mains side: 3-pin plug, 3-core cable, a socket for the filter, small
+    junction box (no inline fuse: the user's decision, see section 7)
   - Enclosure for the electronics (an electrical-shop junction box works)
   - DC barrel jack to screw-terminal adapter (to connect the 5V adapter)
   - Breadboard for testing (if the user doesn't have one)
@@ -250,7 +250,7 @@ PRICE NOTES / THINGS TO AVOID
                 ---> Relay module VCC
   ESP32 GPIOs ----> servo signals, relay IN; button into a GPIO
 
-  Wall plug Live -- fuse -- Relay COM -> NO -- filter socket Live
+  Wall plug Live ---------- Relay COM -> NO -- filter socket Live
   Wall plug Neutral ------------------------- filter socket Neutral
   Wall plug Earth --------------------------- filter socket Earth
   (Relay NC unused)
@@ -301,14 +301,20 @@ LOW-VOLTAGE SIDE
 MAINS SIDE
   - Switch only the LIVE wire, through relay COM -> NO. Neutral and earth
     go straight through to the filter socket.
-  - Fuse on the live wire before the relay.
+  - NO inline fuse (the user's decision, 30 Oct 2026). Protection comes
+    from the home's MCB and the RCD/GFCI outlet. Caveat explained to the
+    user: the MCB protects the house wiring, not the small relay board, so
+    a partial fault in the filter could overheat the relay board without
+    tripping the MCB. Low risk with a small filter. Optional middle ground
+    the user can choose later: plug the setup into an extension board that
+    has a built-in overload breaker.
   - Mains wiring lives inside a closed box, never on a breadboard. Never
     open it while plugged in.
   - Use a GFCI/RCD-protected outlet. Drip loops on every cable.
   - If the user isn't confident with mains wiring, an electrician should
     do that part. Everything else is low-voltage.
-  - Fuse rating and relay suitability get confirmed once the filter's
-    label (watts/amps, voltage) is known.
+  - Relay suitability gets confirmed once the filter's label (watts/amps,
+    voltage) is known.
   - Do NOT wire mains until the 5V relay has passed the 3.3V-signal bench
     test (section 3.3).
 
@@ -479,12 +485,16 @@ ANSWERED (30 Oct 2026)
      failure point, eMMC is enough). The user didn't object. HA data
      stays on the eMMC.
 
+  Q: Inline fuse on the filter's live wire?
+  A: No fuse. Relying on the home MCB + RCD/GFCI outlet. Caveat given
+     (see section 7, mains side).
+
   Q: Remote access via Tailscale?
   A: The user will decide later.
 
 NOT ANSWERED YET (ask the user; do not assume)
   1. Which filter to buy (sponge / internal / hang-on-back), its
-     wattage/amps, and mains voltage (sets fuse rating, confirms relay).
+     wattage/amps, and mains voltage (confirms the relay is suitable).
      A: -
   2. Filter on/off windows (times per day).
      A: -
