@@ -1,7 +1,8 @@
 ```
 AQUARIUM AUTOMATION (ESP32 IoT) - FULL PROJECT CONTEXT EXPORT
 Exported: 30 Oct 2026
-Updated:  30 Oct 2026 (software route, manual button, relay choice decided)
+Updated:  30 Oct 2026 (software route changed to Home Assistant + ESPHome;
+          manual button and relay choice decided)
 Purpose: hand this to a new Claude workspace so it can continue without re-asking settled questions.
 
 ======================================================================
@@ -13,8 +14,8 @@ Purpose: hand this to a new Claude workspace so it can continue without re-askin
 - Section 11 lists OPEN items. Ask the user about these; do not assume.
 - Prices are snapshots from 29 Oct 2026. Re-check before telling the user
   to order.
-- Next deliverable once open items are settled: firmware + a final wiring
-  diagram/pin map for the chosen software route (Blynk).
+- Next deliverable once open items are settled: ESPHome firmware config +
+  a final wiring diagram/pin map, and Home Assistant setup steps.
 
 ======================================================================
 1. ABOUT THE USER / WORKING PREFERENCES
@@ -34,6 +35,10 @@ Purpose: hand this to a new Claude workspace so it can continue without re-askin
   Claude Code (cloud) can commit and push to the project repo
   sweetysharan29-bit/AutoAquariumMaintainer_cld. The user is happy with
   direct pushes to main (no PRs) for this personal repo.
+- Owns an old Dell notebook (Celeron, 4 GB RAM, 32 GB eMMC, integrated
+  graphics, built-in microSD reader, NO Ethernet port) that will become
+  the Home Assistant server. Also has a 32 GB drive (pen drive or microSD:
+  not yet confirmed).
 
 ======================================================================
 2. GOAL AND v1 SCOPE
@@ -132,19 +137,42 @@ limits. A missed feed is harmless.
 3.5 Budget target: about INR 1,250 for electronics
 - The user wrote "1.25k"; interpreted as INR 1,250 (not objected to).
 
-3.6 Software/control route: BLYNK (decided 30 Oct 2026)
-- Arduino firmware + Blynk phone app. Control from anywhere, free push
-  notifications. ESP RainMaker remains the backup if Blynk's free-plan
-  limits get in the way.
-- See section 10 for the datastream plan.
+3.6 Software/control route: HOME ASSISTANT + ESPHOME (decided 30 Oct 2026)
+- ESP32 runs ESPHome firmware (YAML config + small C++ lambdas for the
+  feed sequence/limits). All logic still runs ON THE ESP32 (section 3.4);
+  the tank keeps working if the HA laptop is off.
+- Home Assistant OS installed on the user's old Dell notebook (wiped; the
+  user agreed). It sits near the router, lid closed, plugged in 24/7.
+- Phone control via the Home Assistant companion app. Push notifications
+  via the app (no WhatsApp/Telegram needed).
+- ESPHome's built-in web_server can give the ESP32 its own fallback web
+  page in case the laptop is down.
+- Settings (feed times, food per slot, fasting days, filter windows,
+  button food, limits) are exposed as HA entities and stored ON THE ESP32
+  (restore_value), so no app/platform limits apply.
+- History: Blynk was chosen first, then dropped because its free plan
+  (~5 datastreams) can't hold the settings. Also considered: ESP RainMaker,
+  local web page + Telegram, local web page + WhatsApp (CallMeBot =
+  one-way alerts only; Meta WhatsApp Business API = paid, overkill).
+- HA data stays on the internal eMMC. The user asked about moving it to a
+  microSD/32 GB drive; advised against (worse wear, extra failure point,
+  32 GB eMMC is enough). Keep backups off the laptop (phone/PC).
+- Network: no Ethernet port. Options: laptop Wi-Fi (depends on HA OS
+  having a driver for its Wi-Fi chip; configured via console command) or
+  a USB-to-Ethernet adapter (Realtek RTL8153) + short cable to the router
+  (recommended, not priced).
+- Remote access: NOT DECIDED. Tailscale add-on (free) proposed; the user
+  will decide later. Alternatives: Nabu Casa / HA Cloud (paid, ~US$6-7/
+  month, from memory), Cloudflare Tunnel (needs a domain). Port
+  forwarding not recommended (CGNAT common in India, less secure).
 
 3.7 Manual button: feeds the food type SELECTED IN THE APP (decided 30 Oct 2026)
 - The user rejected short/long press. Instead: a "button food" selector
-  in the Blynk app (flakes or powder). The physical button always feeds
+  in the app (flakes or powder). The physical button always feeds
   whichever food is selected.
 - The selection STAYS until the user changes it manually. Store it in the
-  ESP32's flash (NVS/Preferences) so it survives reboots and works with
-  no Wi-Fi/cloud.
+  ESP32's flash (ESPHome restore_value) so it survives reboots and works
+  with no Wi-Fi/HA.
 - Reason given by the user: in practice only one food type will be in
   use, so one fixed button choice is simpler.
 
@@ -183,6 +211,10 @@ STILL NEEDED, NOT PRICED
   - Breadboard for testing (if the user doesn't have one)
   - 10k ohm resistor (relay pull-down), a few rupees
   - The FILTER itself (the user doesn't own one yet)
+  - USB-to-Ethernet adapter (Realtek RTL8153) + short LAN cable for the
+    HA laptop (recommended; optional if laptop Wi-Fi works with HA OS)
+  - USB pen drive, 8 GB+, for the HA OS install (the user's 32 GB drive
+    works if it is a pen drive)
 
 HOUSEHOLD / FREE
   - 2 small screw-cap plastic bottles (pill bottles, film canisters,
@@ -365,49 +397,49 @@ OPTIONAL
   on paper).
 
 ======================================================================
-10. SOFTWARE / CONTROL APP (DECIDED: Blynk)
+10. SOFTWARE / CONTROL APP (DECIDED: Home Assistant + ESPHome)
 ======================================================================
-Chosen: Arduino firmware + Blynk (decided 30 Oct 2026).
-Backup: ESP RainMaker, if Blynk's free-plan limits get in the way.
+Chosen (30 Oct 2026): ESPHome firmware on the ESP32 + Home Assistant OS on
+the user's old Dell notebook + HA companion app on the phone. Details and
+reasoning in section 3.6.
 
-Options that were discussed:
-  a) Arduino + built-in web page: ESP32 serves its own page on home Wi-Fi.
-     Free, no server; only works on home Wi-Fi without extra setup.
-  b) Arduino + Telegram bot: chat commands, works from anywhere, free
-     notifications; settings via commands are clunky.
-  c) ESPHome + Home Assistant: best dashboard and expansion, but needs an
-     always-on HA server (Raspberry Pi/PC), outside budget unless the
-     user already has one (unknown).
-  d) Blynk: phone app with custom buttons, control from anywhere, free
-     push notifications. CHOSEN.
-  e) ESP RainMaker (Espressif): free official Android/iOS app, built-in
-     schedule UI, schedules run on the ESP32 itself. BACKUP.
-  f) Arduino Cloud: free tier is 2 devices and 5 variables per device.
-     Too tight. Rejected.
-  g) Adafruit IO: free tier 10 feeds, 5 dashboards, 30 data points/min;
-     web dashboard rather than a real phone app. Not preferred.
+HA entities to expose (no platform limits, unlike Blynk):
+  - Buttons: Feed flakes, Feed powder
+  - Switch: Filter override (returns to timer after 30 min)
+  - Select: Button food (flakes/powder), persistent on the ESP32
+  - Settings: feed times + food per slot, fasting weekdays, filter
+    on/off windows, cooldown, max feeds/day, flake wiggle, powder shake
+    count; all stored on the ESP32 (restore_value)
+  - Status: filter state, last feed (time + food), feeds today, blocked
+    reason, time-valid flag
+  - Calibration mode switch (dispense without counting toward limits)
+Notifications (e.g. "Fed flakes at 09:00") via an HA automation using the
+companion app's push notifications.
 
-Blynk free plan (from blynk.io/pricing, checked 29-30 Oct 2026):
-  5 devices, 1 user, 100,000 messages/month (resets monthly), 10 product
-  templates, 1 multi-device dashboard, 1 week data retention, 5
-  events/notifications, 5 cloud automation scenarios, in-app push and
-  email notifications included, SMS not included. Datastreams per
-  template not listed on the pricing page; Blynk's forum/docs conflict
-  (5, 10, 20 have all been cited) and the free plan has changed several
-  times. Design to fit about 5 datastreams. Avoid frequent status pushes
-  (send on change plus every few minutes) to stay well within the
-  message cap.
+HA hardware notes (from memory, re-check against official docs at install):
+  - HA OS minimum about 2 GB RAM, 32 GB storage. The laptop meets this.
+  - Install: Ubuntu live USB -> write the HA OS "generic x86-64" image to
+    the internal eMMC (Disks > Restore Disk Image) -> boot -> open
+    http://homeassistant.local:8123. BIOS: UEFI on, Secure Boot off
+    (Dell: F2 = BIOS, F12 = boot menu). UEFI support on this laptop not
+    yet confirmed.
+  - Remote access: undecided, Tailscale proposed (section 3.6).
 
-Datastream plan (5):
-  1. Feed flakes (button)
-  2. Feed powder (button)
-  3. Filter on/off override (switch)
-  4. Status text (last feed, next feed, filter state, blocked reasons)
-  5. Button food selector (flakes/powder) - uses the former "spare" slot
-  Schedule/limit settings that don't fit in Blynk datastreams live in
-  firmware config (or a small local web page later). If Blynk turns out
-  to allow more datastreams on the free plan, settings can move into the
-  app.
+Options that were discussed and not chosen:
+  a) Arduino + built-in web page: free, no server; home Wi-Fi only.
+  b) Arduino + Telegram bot: works anywhere, free notifications; settings
+     via commands are clunky.
+  c) Local web page + WhatsApp: WhatsApp has no free bot API. CallMeBot
+     (free, third-party) = one-way alerts only. Meta WhatsApp Business API
+     = paid per message, needs business account. Rejected.
+  d) Blynk: chosen first, then dropped. Free plan (blynk.io/pricing,
+     checked 29-30 Oct 2026): 5 devices, 100,000 messages/month, 5
+     events/notifications, 5 automations; datastreams per template unclear
+     (5/10/20 cited). Too few datastreams for in-app settings.
+  e) ESP RainMaker: free app with built-in schedule UI that runs on the
+     ESP32. Good option, but HA chosen since the user has a spare laptop.
+  f) Arduino Cloud: free tier 2 devices, 5 variables/device. Rejected.
+  g) Adafruit IO: web dashboard rather than a phone app. Not preferred.
 
 ======================================================================
 11. OPEN DECISIONS (ask the user)
@@ -421,9 +453,16 @@ Datastream plan (5):
   5. RTC now or later (currently deferred).
   6. Which parts, if any, the user already owns.
   7. Default "button food" before the user first sets it in the app.
+  8. Remote access: Tailscale (proposed) or other. The user will decide
+     later.
+  9. Laptop model (to check its Wi-Fi chip works with HA OS) and whether
+     it supports UEFI boot.
+ 10. Laptop Wi-Fi or a USB-to-Ethernet adapter.
+ 11. Is the user's 32 GB drive a USB pen drive or a microSD card?
 
-  RESOLVED 30 Oct 2026: software route (Blynk), manual button behaviour
-  (app-selected food, persistent), relay module (5V, INR 72).
+  RESOLVED 30 Oct 2026: software route (Home Assistant + ESPHome; Blynk
+  dropped), manual button behaviour (app-selected food, persistent),
+  relay module (5V, INR 72), HA data stays on the laptop's eMMC.
 
 ======================================================================
 12. FUTURE IDEAS (out of scope for v1)
@@ -456,14 +495,14 @@ The spare GPIOs and reserved I2C pins (21/22) leave room for these.
 ======================================================================
 14. CURRENT STATUS / NEXT STEPS
 ======================================================================
-- Status: hardware and feature design agreed; software route (Blynk),
-  button behaviour and relay module decided; parts list ready; nothing
-  purchased; no code.
+- Status: hardware and feature design agreed; software route (Home
+  Assistant + ESPHome), button behaviour and relay module decided; parts
+  list ready; nothing purchased; no code; HA not installed yet.
 - Next steps:
   1. Settle the remaining open decisions in section 11.
   2. User buys parts (re-check prices/stock; 180-degree MG90S only).
-  3. Deliver Blynk firmware implementing section 9, with all logic on
-     the ESP32.
+  3. Deliver the ESPHome config implementing section 9, with all logic on
+     the ESP32, plus step-by-step HA OS install on the Dell laptop.
   4. Deliver a final wiring diagram + pin map matching sections 6-7.
   5. Bench test on a breadboard WITHOUT mains: servos, button, relay
      click/LED. Specifically confirm the 5V relay switches reliably from
